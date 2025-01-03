@@ -1,133 +1,57 @@
+#========================= I M P O R T A Ç Õ E S =====================
 import os
-import tkinter as tk
-from tkinter import filedialog, messagebox, Checkbutton, IntVar
-from PIL import Image, ImageTk, ImageOps, ImageFilter
 import numpy as np
 from Q1 import laplaciano, unsharp_masking, highboost, prewitt, sobel
-from Q2 import mask1, mask2, mask3, mask4, mask5
-from Q3 import diferenca, uniao, intersecao
-from Q4 import erosao, dilatacao, abertura, fechamento
+from Q2 import matriz1, matriz2, matriz3, matriz4, mediana
+from Q3 import intersecao, uniao, diferenca
+from Q4 import dilatacao, erosao, abertura, fechamento
+from Q5 import Q5a, Q5b, Q5c, Q5d, Q5e
 
-def i2m(imagem_path):
-  imagem = Image.open(imagem_path)
-  imagem_gray = imagem.convert('L')
-  imagem_array = np.array(imagem_gray)
+#==================== C R I A Ç Ã O   D E   P A S T A ================
+if not os.path.exists("imagens_filtradas"):
+    os.makedirs("imagens_filtradas")
 
-  return imagem_array
+#==================== Q U E S T Õ E S ================================
+#==================== Questão 1
+laplaciano("lena_gray.bmp", "imagens_filtradas/Q1a_laplaciano.png")
+unsharp_masking("lena_gray.bmp", "imagens_filtradas/Q1b_unsharp.png")
+highboost("lena_gray.bmp", "imagens_filtradas/Q1c_highboost.png")
+prewitt("lena_gray.bmp", "imagens_filtradas/Q1d_prewitt.png")
+sobel("lena_gray.bmp", "imagens_filtradas/Q1e_sobel.png")
+ 
+#==================== Questão 2
+matriz1("lena_ruido.bmp", "imagens_filtradas/Q2_mask1.png")
+matriz2("lena_ruido.bmp", "imagens_filtradas/Q2_mask2.png")
+matriz3("lena_ruido.bmp", "imagens_filtradas/Q2_mask3.png")
+matriz4("lena_ruido.bmp", "imagens_filtradas/Q2_mask4.png")
+mediana("lena_ruido.bmp", "imagens_filtradas/Q2_mediana.png")
 
-def m2i_png(imagem_array, imagem_path):
-  imagem = Image.fromarray(np.uint8(imagem_array))
-  imagem.save(imagem_path, format='PNG')
-  
-def m2i_bmp(imagem_array, imagem_path):
-  imagem = Image.fromarray(np.uint8(imagem_array))
-  imagem.save(imagem_path, format='BMP')
-  
-def selecionar_imagem():
-    root = tk.Tk()
-    root.withdraw()
-    caminho_imagem = filedialog.askopenfilename(
-        title="Selecione a Imagem", 
-        filetypes=[("Arquivos de Imagem", "*.bmp;*.png;*.jpg;*.jpeg;*.tiff")]
-    )
+#==================== Questão 3
+uniao("img1.png", "img2.png", "imagens_filtradas/Q3_uniao.png")
+intersecao("img1.png", "img2.png", "imagens_filtradas/Q3_intersecao.png")
+diferenca("img1.png", "img2.png", "imagens_filtradas/Q3_diferenca.png")
+
+#==================== Questão 4 #Adicionar elemento central do kernel
+# Elemento estruturante (exemplo)
+struct = np.array([
+    [0, 1, 0],
+    [1, 1, 1],
+    [0, 1, 0]
+])
+
+# Centro do elemento estruturante
+center = (1, 1)
     
-    return caminho_imagem
+dilatacao("img3.png", struct, center, "imagens_filtradas/Q4_dilatacao.png")
+erosao("img3.png", struct, center, "imagens_filtradas/Q4_erosao.png")
+abertura("img3.png", struct, center, "imagens_filtradas/Q4_abertura.png")
+fechamento("img3.png", struct, center, "imagens_filtradas/Q4_fechamento.png")
 
-#========================= P R I N C I P A L =========================
-class Principal:
-
-  def __init__(self, root):
-    self.root = root
-    self.root.title("Atividade Prática 02")
-    self.imagem_atual = None
-    self.criar_pastas()
-
-    #==========================BOTÕES=========================
-    self.Question1 = tk.Button(root,
-                          text="Questão 1",
-                          command=self.Q1,
-                          bg="lightblue",
-                          width=25)
-
-    self.Question2 = tk.Button(root,
-                             text="Questão 2",
-                             command=self.Q2,
-                             bg="lightblue",
-                             width=25)
-
-    self.Question3 = tk.Button(root,
-                            text="Questão 3",
-                            command=self.Q3,
-                            bg="lightblue",
-                            width=25)
-    
-    self.Question4 = tk.Button(root,
-                            text="Questão 4",
-                            command=self.Q4,
-                            bg="lightblue",
-                            width=25)
-
-    self.sair = tk.Button(root,
-                          text="4. Sair",
-                          command=self.root.destroy,
-                          bg="lightblue",
-                          width=25)
-    #========layout==========
-    self.Question1.pack(pady=10)
-    self.Question2.pack(pady=10)
-    self.Question3.pack(pady=10)
-    self.Question4.pack(pady=10)
-    self.sair.pack(pady=10)
+#==================== Questão 5
+Q5a("quadro.png", "imagens_filtradas/Q5a.png")
+Q5b("quadro.png", "imagens_filtradas/Q5b.png")
+Q5c("quadro.png", "imagens_filtradas/Q5c.png")
+Q5d("quadro.png", "imagens_filtradas/Q5d.png")
+Q5e("quadro.png", "imagens_filtradas/Q5e.png")
 
 
-#=========================FUNÇÕES=========================
-
-  def criar_pastas(self):
-    if not os.path.exists("imagens"):
-      os.makedirs("imagens")
-    if not os.path.exists("imagens_filtradas"):
-      os.makedirs("imagens_filtradas")
-
-  def Q1(self):
-    e1 = ("imagens/lena_gray.bmp")
-    m1 = i2m(e1)
-    m2i_bmp(laplaciano(m1), "imagens_filtradas/laplace.bmp")
-    m2i_bmp(unsharp_masking(m1), "imagens_filtradas/unsharp.bmp")
-    m2i_bmp(highboost(m1), "imagens_filtradas/highb.bmp")
-    m2i_bmp(prewitt(m1), "imagens_filtradas/prew.bmp")
-    m2i_bmp(sobel(m1), "imagens_filtradas/sob.bmp")
-    
-  def Q2(self):
-    e2 = ("imagens/lena_ruido.bmp")
-    m2 = i2m(e2)
-    m2i_bmp(mask1(m2), "imagens_filtradas/m1.bmp")
-    m2i_bmp(mask2(m2), "imagens_filtradas/m2.bmp")
-    m2i_bmp(mask3(m2), "imagens_filtradas/m3.bmp")
-    m2i_bmp(mask4(m2), "imagens_filtradas/m4.bmp")
-    m2i_bmp(mask5(m2), "imagens_filtradas/mediana.bmp")
-    
-  def Q3(self):
-    e3a = selecionar_imagem()
-    e3b = selecionar_imagem()
-    m3a = i2m(e3a)
-    m3b = i2m(e3b)
-    
-    if len(m3a) != len(m3b) or len(m3a[0]) != len(m3b[0]):
-        raise ValueError("Imagens de dimensões diferentes.")
-    else:
-        m2i_png(intersecao(m3a, m3b), "imagens_filtradas/intersecao.png")
-        m2i_png(uniao(m3a, m3b), "imagens_filtradas/uniao.png")
-        m2i_png(diferenca(m3a, m3b), "imagens_filtradas/diferenca.png")
-    
-  def Q4(self):
-    e4 = selecionar_imagem()
-    m4 = i2m(e4)
-    m2i_png(erosao(m4, 3), "imagens_filtradas/erosao.png")
-    m2i_png(dilatacao(m4, 3), "imagens_filtradas/dilatacao.png")
-    m2i_png(abertura(m4, 3), "imagens_filtradas/abertura.png")
-    m2i_png(fechamento(m4, 3), "imagens_filtradas/fechamento.png")
-    
-if __name__ == "__main__":
-  root = tk.Tk()
-  programa = Principal(root)
-  root.mainloop()
