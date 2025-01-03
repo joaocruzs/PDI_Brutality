@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from Auxiliares import preencher, eliminar, fechar, esqueletar, hitar, m2i_rgb, i2m_rgb
+from Auxiliares import preencher, eliminar, fechar, esqueletar, m2i_rgb, i2m_rgb
 
 #==================== Q U E S T Õ E S ===========================
 #==================== 5.a. Preencher todos os buracos dos objetos pretos
