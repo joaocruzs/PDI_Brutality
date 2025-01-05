@@ -1,4 +1,4 @@
-from Auxiliares import preencher, eliminar, fechar, esqueletar, hitar, m2i_rgb, i2m_rgb
+from Auxiliares import preencher, eliminar, fechar, esqueletar, hitar, m2i_rgb, i2m_rgb, m2i
 
 #==================== Q U E S T Õ E S ===========================
 #==================== 5.a. Preencher todos os buracos dos objetos pretos
@@ -41,4 +41,4 @@ def Q5e(img, imagem_path):
 def Q5f(img, imagem_path):
     R, G, B = i2m_rgb(img)
     N = hitar(R, G, B, 255, 0, 0)
-    m2i_rgb(N, imagem_path)
+    m2i(N, imagem_path)
