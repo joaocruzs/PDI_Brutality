@@ -1,3 +1,4 @@
 # PDI_Atividade_Prática_02
 
-O arquivo main.py é responsável por criar uma pasta (imagens_filtradas) e guardar todos os resultados
+As imagens a serem usadas como entrada constam na pasta imagens.
+O arquivo main.py é responsável por criar uma pasta (imagens_geradas) e guardar todos os resultados.
