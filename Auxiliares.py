@@ -247,11 +247,11 @@ def hitar(R, G ,B, r, g, b):
         hit += cv2.bitwise_and(eroded_hit, dilated_miss)
         
     for i in range(len(bbs)):
-        caminho_completo = f"{'caminho_base'}_{i}.png"
+        caminho_completo = f"{'imagens_geradas/elemento'}_{i}.png"
         bbs[i] = (bbs[i] * 127).astype(np.uint8)
         m2i(bbs[i], caminho_completo)
     for i in range(len(bbs)):
-        caminho_completo = f"{'novo_caminho_base'}_{i}.png"
+        caminho_completo = f"{'imagens_geradas/contraparte'}_{i}.png"
         ccs[i] = (ccs[i] * 127).astype(np.uint8)
         m2i(ccs[i], caminho_completo)
     

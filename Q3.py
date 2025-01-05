@@ -1,7 +1,7 @@
 from Auxiliares import i2m, m2i
 
-#==================== Q U E S T Õ E S ===========================
-#==================== 3.q. união
+#=================== Q U E S T Õ E S ===========================
+#=================== 3.q. união
 def uniao(img1, img2, imagem_path):
     imagem1 = i2m(img1)
     imagem2 = i2m(img2)
@@ -19,7 +19,7 @@ def uniao(img1, img2, imagem_path):
 
     m2i(resultado, imagem_path)
     
-#==================== 3.b. interseção
+#=================== 3.b. interseção
 def intersecao(img1, img2, imagem_path):
     imagem1 = i2m(img1)
     imagem2 = i2m(img2)
@@ -37,7 +37,7 @@ def intersecao(img1, img2, imagem_path):
 
     m2i(resultado, imagem_path)
 
-#==================== 3.c. diferença
+#=================== 3.c. diferença
 def diferenca(img1, img2, imagem_path):
     imagem1 = i2m(img1)
     imagem2 = i2m(img2)

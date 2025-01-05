@@ -40,5 +40,5 @@ def Q5e(img, imagem_path):
 #==================== 5.f. Utilizar a transformada hit-or-miss para localizar objetos vermelhos de f
 def Q5f(img, imagem_path):
     R, G, B = i2m_rgb(img)
-    R, G, B = hitar(R, G, B, 255, 0, 0)
-    m2i_rgb(R, G, B, imagem_path,)
+    N = hitar(R, G, B, 255, 0, 0)
+    m2i_rgb(N, imagem_path)
