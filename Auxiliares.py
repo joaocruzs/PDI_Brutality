@@ -1,14 +1,9 @@
-import numpy as np
 import cv2
+import numpy as np
 from PIL import Image
+from scipy.ndimage import label
 
 #==================== FUNÇÕES CHAMADAS DIRETAMENTE PELAS QUESTÕES ================= 
-#==================== Kernel de Suavização Gaussiano para questão 1
-def gaussiano(imagem):
-    kernel = np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]])
-    
-    return mascara(imagem, kernel, 16)
-
 #==================== Aplicação de Máscara Genérica para questão 2
 def mascara(imagem, kernel, peso):
     linhas, colunas = imagem.shape
@@ -72,7 +67,30 @@ def erodir (img, kernel, center):
 #==================== Preenchimento de Buracos na Imagem colorida para questão 5.A e 5.C
 def preencher(R, G, B, r, g, b):
     N = receba(R, G, B, r, g, b)
-    N = preencha(N)
+    Complemento = 1 - N
+    h, w = N.shape
+    F = np.zeros((h, w), dtype=np.uint8)
+
+    F[0, :] = 1 - N[0, :]
+    F[-1, :] = 1 - N[-1, :]
+    F[:, 0] = 1 - N[:, 0]
+    F[:, -1] = 1 - N[:, -1]
+
+    bb = np.ones((3, 3), dtype=np.uint8)
+    F_dilatado = F.copy()
+
+    while True:
+        F_prev = F_dilatado.copy()
+        F_dilatado = cv2.dilate(F_dilatado, bb)
+        F_dilatado = np.minimum(F_dilatado, Complemento)
+        if np.array_equal(F_dilatado, F_prev):
+            break
+
+    F_final = 1 - F_dilatado
+    preenchido = np.minimum(F_final, Complemento)
+    resultado = np.maximum(N, preenchido)
+
+    N = (resultado * 255).astype(np.uint8)
     R, G, B = devolva(R, G, B, N, r, g, b)
     
     return R, G, B
@@ -202,9 +220,45 @@ def esqueletar(R, G, B, r, g, b):
                 
     return R, G, B
 
+#==================== Função que aplica o Hit or Miss para questão 5.F
+def hitar(R, G ,B, r, g, b):
+    N = receba(R, G, B, r, g, b)
+    hit = np.zeros(N.shape)
+    
+    labeled_matrix, num_features = label(N)
+    bbs = []
+    ccs = []
 
-#++++++++++++++++++++ FUNÇÕES QUE AUXILIAM AS PRINCIPAIS ++++++++++++++++++++++++++
-#Função para gerar uma nova matriz binária delimitando apenas a cor desejada
+    for i in range(1, num_features + 1):
+        rows, cols = np.where(labeled_matrix == i)
+        min_row, max_row = rows.min(), rows.max()
+        min_col, max_col = cols.min(), cols.max()
+
+        bb = N[min_row:max_row + 1, min_col:max_col + 1]
+        bbs.append(bb)
+        
+    for i in range(len(bbs)):
+        aux = np.pad(bbs[i], pad_width=1, mode='constant', constant_values=0)
+        ccs.append(1 - aux)
+        
+    for i in range(len(bbs)):
+        eroded_hit = cv2.erode(N, bbs[i])
+        dilated_miss = cv2.dilate(1 - N, ccs[i])
+        hit += cv2.bitwise_and(eroded_hit, dilated_miss)
+        
+    for i in range(len(bbs)):
+        caminho_completo = f"{'caminho_base'}_{i}.png"
+        bbs[i] = (bbs[i] * 127).astype(np.uint8)
+        m2i(bbs[i], caminho_completo)
+    for i in range(len(bbs)):
+        caminho_completo = f"{'novo_caminho_base'}_{i}.png"
+        ccs[i] = (ccs[i] * 127).astype(np.uint8)
+        m2i(ccs[i], caminho_completo)
+    
+    hit = 1 - hit
+    return (hit * 255).astype(np.uint8)
+
+#==================== Função para gerar uma nova matriz binária delimitando apenas a cor desejada
 def receba(R, G, B, r, g, b):
     linhas, colunas = R.shape
     N = np.zeros((linhas, colunas), dtype=np.uint8)
@@ -217,34 +271,7 @@ def receba(R, G, B, r, g, b):
                 N[i][j] = 0
     return N
 
-#Preenchimento de Buracos da matriz binária Q5.A e Q5.C
-def preencha(N):
-    Complemento = 1 - N
-    h, w = N.shape
-    F = np.zeros((h, w), dtype=np.uint8)
-
-    F[0, :] = 1 - N[0, :]
-    F[-1, :] = 1 - N[-1, :]
-    F[:, 0] = 1 - N[:, 0]
-    F[:, -1] = 1 - N[:, -1]
-
-    bb = np.ones((3, 3), dtype=np.uint8)
-    F_dilatado = F.copy()
-
-    while True:
-        F_prev = F_dilatado.copy()
-        F_dilatado = cv2.dilate(F_dilatado, bb)
-        F_dilatado = np.minimum(F_dilatado, Complemento)
-        if np.array_equal(F_dilatado, F_prev):
-            break
-
-    F_final = 1 - F_dilatado
-    preenchido = np.minimum(F_final, Complemento)
-    resultado = np.maximum(N, preenchido)
-
-    return (resultado * 255).astype(np.uint8)
-
-#Função para "sobrepor" a matriz binária sobre a imagem colorida 
+#==================== Função para "sobrepor" a matriz binária sobre a imagem colorida 
 def devolva(R, G, B, N, r, g, b):
     for i in range(len(N)):
         for j in range(len(N[0])):
@@ -254,7 +281,15 @@ def devolva(R, G, B, N, r, g, b):
                 B[i][j] = b
     return R, G, B
    
-        
+#==================== Função para aplicar a transformada hit-or-miss
+def hit_or_miss(img, kernel_hit, kernel_miss):
+    eroded_hit = cv2.erode(img, kernel_hit)
+    dilated_miss = cv2.dilate(1 - img, kernel_miss)
+    result = cv2.bitwise_and(eroded_hit, dilated_miss)
+    
+    return result
+
+
 #==================== C O N V E R S Õ E S =========================================
 #==================== Converter de imagem para matriz em escala de Cinza
 def i2m(imagem_path):

@@ -1,4 +1,3 @@
-import numpy as np
 from Auxiliares import i2m, m2i, dilatar, erodir
 
 #==================== Q U E S T Õ E S ===========================

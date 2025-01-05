@@ -1,6 +1,4 @@
-import cv2
-import numpy as np
-from Auxiliares import preencher, eliminar, fechar, esqueletar, m2i_rgb, i2m_rgb
+from Auxiliares import preencher, eliminar, fechar, esqueletar, hitar, m2i_rgb, i2m_rgb
 
 #==================== Q U E S T Õ E S ===========================
 #==================== 5.a. Preencher todos os buracos dos objetos pretos
@@ -38,3 +36,9 @@ def Q5e(img, imagem_path):
     R, G, B = esqueletar(R, G, B, 255, 255, 0)
     R, G, B = esqueletar(R, G, B, 0, 255, 0)
     m2i_rgb(R, G, B, imagem_path)
+
+#==================== 5.f. Utilizar a transformada hit-or-miss para localizar objetos vermelhos de f
+def Q5f(img, imagem_path):
+    R, G, B = i2m_rgb(img)
+    R, G, B = hitar(R, G, B, 255, 0, 0)
+    m2i_rgb(R, G, B, imagem_path,)

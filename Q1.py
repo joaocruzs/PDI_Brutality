@@ -1,82 +1,67 @@
+import cv2
 import numpy as np
-from Auxiliares import gaussiano, i2m, m2i
+from Auxiliares import m2i
 
 #==================== Q U E S T Õ E S =========================== 
 #==================== Questão 1.a. Laplaciano
 def laplaciano(img, imagem_path):
-    imagem = i2m(img)
-    kernel = np.array([[ 0,  1,  0], [ 1, -4,  1], [ 0,  1,  0]])
+    imagem = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+    laplaciano = cv2.Laplacian(imagem, cv2.CV_64F, ksize=3)
+    laplaciano = cv2.convertScaleAbs(laplaciano)
+    matriz = np.array(laplaciano)
+    m2i(matriz, imagem_path)
+
+#==================== Questão 1.b. Unsharp Masking   
+def unsharp(img, imagem_path, alpha = 1.5):
+    imagem = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+    imagem_suavizada = cv2.GaussianBlur(imagem, (9, 9), sigmaX=2, sigmaY=2)
     
-    linhas, colunas = imagem.shape
-    laplaciano = np.copy(imagem)
-
-    for i in range(1, linhas - 1):
-        for j in range(1, colunas - 1):
-            janela = imagem[i-1:i+2, j-1:j+2]
-            laplaciano[i, j] = np.sum(janela * kernel)
-
-    resultado = np.clip(laplaciano, 0, 255)
-    m2i(resultado, imagem_path)
-
-#==================== Questão 1.b. Unsharp Masking
-def unsharp_masking(img,imagem_path, alpha = 1.5):
-    imagem = i2m(img)
-    imagem_suavizada = gaussiano(imagem)
-    realce = imagem - imagem_suavizada
-    imagem_unsharp = imagem + alpha * realce
-
-    resultado = np.clip(imagem_unsharp, 0, 255)
-    m2i(resultado, imagem_path)
+    mascara = cv2.subtract(imagem, imagem_suavizada)
+    
+    imagem_unsharp = cv2.addWeighted(imagem, alpha, mascara, -0.5, 0)
+    matriz = np.array(imagem_unsharp)
+    m2i(matriz, imagem_path)
 
 #==================== Questão 1.c. Highboost
-def highboost(img, imagem_path, k = 1.5):
-    imagem = i2m(img)
-    imagem_suavizada = gaussiano(imagem)
-    imagem_highboost = k * imagem - imagem_suavizada
-    
-    resultado = np.clip(imagem_highboost, 0, 255)
-    m2i(resultado, imagem_path)
+def highboost(img, imagem_path, A = 1.5):
+    imagem = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+    imagem_suavizada = cv2.GaussianBlur(imagem, (9, 9), sigmaX=2, sigmaY=2)
+
+    mascara = cv2.subtract(imagem, imagem_suavizada)
+
+    imagem_highboost = cv2.addWeighted(imagem, A, mascara, (1 - A), 0)
+    matriz = np.array(imagem_highboost)
+    m2i(matriz, imagem_path)
 
 #=================== Questão 1.d.i Detecção de Bordas Usando Prewitt
 def prewitt(img, imagem_path):
-    imagem = i2m(img)
-    kernel_Gx = np.array([[ 1,  0, -1], [ 1,  0, -1], [ 1,  0, -1]])
-    kernel_Gy = np.array([[ 1,  1,  1], [ 0,  0,  0], [-1, -1, -1]])
+    imagem = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+    kernel_prewitt_x = np.array([[-1, 0, 1],
+                                 [-1, 0, 1],
+                                 [-1, 0, 1]])
 
-    linhas, colunas = imagem.shape
-    grad_Gx = np.zeros_like(imagem)
-    grad_Gy = np.zeros_like(imagem)
-    
-    for i in range(1, linhas - 1):
-        for j in range(1, colunas - 1):
-            janela = imagem[i - 1:i + 2, j - 1:j + 2]
-            grad_Gx[i, j] = np.sum(janela * kernel_Gx)
-            grad_Gy[i, j] = np.sum(janela * kernel_Gy)
-            
-    gradiente_total = np.sqrt(grad_Gx**2 + grad_Gy**2)
-    binarizado = (gradiente_total > 10) * 255 
-    
-    resultado = np.clip(binarizado, 0, 255)
-    m2i(resultado, imagem_path)
+    kernel_prewitt_y = np.array([[-1, -1, -1],
+                                 [ 0,  0,  0],
+                                 [ 1,  1,  1]])
+
+    gradiente_x = cv2.filter2D(imagem, -1, kernel_prewitt_x)
+    gradiente_y = cv2.filter2D(imagem, -1, kernel_prewitt_y)
+
+    bordas = cv2.magnitude(gradiente_x.astype(float), gradiente_y.astype(float))
+    bordas = np.uint8(bordas)
+    matriz = np.array(bordas)
+    m2i(matriz, imagem_path)
 
 #==================== Questão 1.d.ii Detecção de Bordas usando Sobel
 def sobel(img, imagem_path):
-    imagem = i2m(img)
-    kernel_Gx = np.array([[ 1,  0, -1], [ 2,  0, -2], [ 1,  0, -1]])
-    kernel_Gy = np.array([[ 1,  2,  1], [ 0,  0,  0], [-1, -2, -1]])
-    
-    linhas, colunas = imagem.shape
-    grad_Gx = np.zeros_like(imagem)
-    grad_Gy = np.zeros_like(imagem)
+    imagem = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
 
-    for i in range(1, linhas - 1):
-        for j in range(1, colunas - 1):
-            janela = imagem[i - 1:i + 2, j - 1:j + 2]
-            grad_Gx[i, j] = np.sum(janela * kernel_Gx)
-            grad_Gy[i, j] = np.sum(janela * kernel_Gy)
-    
-    gradiente_total = np.sqrt(grad_Gx**2 + grad_Gy**2)
-    binarizado = (gradiente_total > 10) * 255 
-    
-    resultado = np.clip(binarizado, 0, 255)
-    m2i(resultado, imagem_path)
+    gradiente_x = cv2.Sobel(imagem, cv2.CV_64F, dx=1, dy=0, ksize=3)
+    gradiente_y = cv2.Sobel(imagem, cv2.CV_64F, dx=0, dy=1, ksize=3)
+
+    gradiente_x = cv2.convertScaleAbs(gradiente_x)
+    gradiente_y = cv2.convertScaleAbs(gradiente_y)
+
+    bordas = cv2.addWeighted(gradiente_x, 0.5, gradiente_y, 0.5, 0)
+    matriz = np.array(bordas)
+    m2i(matriz, imagem_path)
